@@ -165,7 +165,14 @@
         import { getFirestore, doc, setDoc, onSnapshot, collection, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Firebase Configuration
-        const firebaseConfig = JSON.parse(__firebase_config);
+                const firebaseConfig = {
+            apiKey: "AIzaSyAA5tYApoXJBrtkLD9DMMwrjC8satEeHnk",
+            authDomain: "preterite-quest.firebaseapp.com",
+            projectId: "preterite-quest",
+            storageBucket: "preterite-quest.firebasestorage.app",
+            messagingSenderId: "131193250622",
+            appId: "1:131193250622:web:c21ff4b2f54ef9870a826f"
+        };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
