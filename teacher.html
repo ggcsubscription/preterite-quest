@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard - Preterite Quest</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+        body { font-family: 'Outfit', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen">
+
+    <nav class="bg-white/90 backdrop-blur-md border-b border-slate-200 py-4 px-6 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black italic shadow-lg shadow-indigo-200">P</div>
+                <h1 class="text-xl font-extrabold tracking-tight">Preterite<span class="text-indigo-600 font-black">Quest</span> <span class="text-xs font-medium text-slate-400">Teacher Dashboard</span></h1>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto px-4 py-12">
+        <section class="bg-white p-10 rounded-[2.5rem] shadow-2xl border border-slate-100">
+            <h2 class="text-3xl font-black mb-8">Student Progress Report</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="border-b border-slate-100 text-slate-400 text-xs uppercase tracking-widest font-bold">
+                            <th class="py-4">Student Name</th>
+                            <th class="py-4">L1 (AR)</th>
+                            <th class="py-4">L2 (ER/IR)</th>
+                            <th class="py-4">L3 (Yo)</th>
+                            <th class="py-4">L4 (Stems)</th>
+                            <th class="py-4">Boss</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reports-table-body" class="text-sm">
+                        <tr><td colspan="6" class="py-8 text-center text-slate-400">Loading student reports...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAA5tYApoXJBrtkLD9DMMwrjC8satEeHnk",
+            authDomain: "preterite-quest.firebaseapp.com",
+            projectId: "preterite-quest",
+            storageBucket: "preterite-quest.firebasestorage.app",
+            messagingSenderId: "131193250622",
+            appId: "1:131193250622:web:c21ff4b2f54ef9870a826f"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = 'preterite-quest';
+
+        await signInAnonymously(auth);
+
+        const reportsCol = collection(db, 'artifacts', appId, 'public', 'data', 'student_reports');
+        onSnapshot(reportsCol, (snapshot) => {
+            const tbody = document.getElementById('reports-table-body');
+            tbody.innerHTML = '';
+            if (snapshot.empty) {
+                tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-slate-400">No student data yet. Students will appear here once they start the quest.</td></tr>';
+                return;
+            }
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                const row = `
+                    <tr class="border-b border-slate-50 hover:bg-slate-50 transition">
+                        <td class="py-3 font-bold text-slate-700">${data.name || 'Anonymous'}</td>
+                        <td class="py-3">${data.level1 ? '✅' : '⏳'}</td>
+                        <td class="py-3">${data.level2 ? '✅' : '⏳'}</td>
+                        <td class="py-3">${data.level3 ? '✅' : '⏳'}</td>
+                        <td class="py-3">${data.level4 ? '✅' : '⏳'}</td>
+                        <td class="py-3">${data.bossDefeated ? '🏆' : '⏳'}</td>
+                    </tr>`;
+                tbody.innerHTML += row;
+            });
+        }, (err) => console.error(err));
+    </script>
+</body>
+</html>
