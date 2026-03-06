@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spanish Preterite: The Quest for Mastery (Teacher Edition)</title>
+    
+    <!-- Google Analytics (gtag.js) -->
+    <!-- REEMPLAZA "TU_ID_AQUÍ" con tu ID de medición de Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=TU_ID_AQUÍ"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'TU_ID_AQUÍ');
+    </script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+        body { font-family: 'Outfit', sans-serif; scroll-behavior: smooth; }
+        .progress-bar { transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .shake { animation: shake 0.5s; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+        .float-anim { animation: float 3s ease-in-out infinite; }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen">
+
+    <!-- Navbar -->
+    <nav class="bg-white/90 backdrop-blur-md border-b border-slate-200 py-4 px-6 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black italic shadow-lg shadow-indigo-200">P</div>
+                <h1 class="text-xl font-extrabold tracking-tight">Preterite<span class="text-indigo-600 font-black">Quest</span></h1>
+            </div>
+            <div id="global-progress-text" class="text-xs font-bold uppercase tracking-widest text-indigo-600 bg-indigo-50 px-4 py-1.5 rounded-full border border-indigo-100 text-center">
+                Waiting for login...
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto px-4 py-12">
+        
+        <!-- Login / Setup Section -->
+        <section id="login-section" class="max-w-md mx-auto bg-white p-10 rounded-[2.5rem] shadow-2xl border border-slate-100 text-center">
+            <h2 class="text-3xl font-black mb-6">Welcome, Student! 🎓</h2>
+            <p class="text-slate-500 mb-8">Enter your full name to start your quest and save your progress.</p>
+            <input type="text" id="student-name" class="w-full p-4 border-2 border-slate-100 rounded-2xl mb-6 focus:border-indigo-500 outline-none font-bold text-center" placeholder="Your Name">
+            <button id="login-btn" onclick="login()" class="w-full bg-indigo-600 text-white font-black py-4 rounded-2xl hover:bg-indigo-500 transition shadow-xl shadow-indigo-100 active:scale-95 disabled:opacity-50" disabled>
+                Initializing Auth...
+            </button>
+            <button onclick="toggleDashboard()" class="mt-8 text-xs font-bold text-slate-400 hover:text-indigo-600 transition uppercase tracking-widest">
+                Teacher Dashboard 📊
+            </button>
+        </section>
+
+        <!-- Teacher Dashboard (Hidden) -->
+        <section id="teacher-dashboard" class="hidden max-w-5xl mx-auto bg-white p-10 rounded-[2.5rem] shadow-2xl border border-slate-100">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-3xl font-black">Student Progress Report</h2>
+                <button onclick="toggleDashboard()" class="text-sm font-bold text-indigo-600 bg-indigo-50 px-4 py-2 rounded-xl">Back to Game</button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="border-b border-slate-100 text-slate-400 text-xs uppercase tracking-widest font-bold">
+                            <th class="py-4">Student Name</th>
+                            <th class="py-4">L1 (AR)</th>
+                            <th class="py-4">L2 (ER/IR)</th>
+                            <th class="py-4">L3 (Yo)</th>
+                            <th class="py-4">L4 (Stems)</th>
+                            <th class="py-4">Boss</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reports-table-body" class="text-sm">
+                        <!-- Reports injected here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Game Section (Hidden until login) -->
+        <section id="game-section" class="hidden">
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-12">
+                <div id="map-lvl-1" class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm border-b-4 border-b-emerald-500 opacity-50">
+                    <span class="text-[10px] font-bold text-emerald-600 uppercase">Lvl 1</span>
+                    <h4 class="font-black text-sm">Regular AR</h4>
+                </div>
+                <div id="map-lvl-2" class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm border-b-4 border-b-blue-500 opacity-50">
+                    <span class="text-[10px] font-bold text-blue-600 uppercase">Lvl 2</span>
+                    <h4 class="font-black text-sm">Regular ER/IR</h4>
+                </div>
+                <div id="map-lvl-3" class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm border-b-4 border-b-amber-500 opacity-50">
+                    <span class="text-[10px] font-bold text-amber-600 uppercase">Lvl 3</span>
+                    <h4 class="font-black text-sm">Yo-Changes</h4>
+                </div>
+                <div id="map-lvl-4" class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm border-b-4 border-b-purple-500 opacity-50">
+                    <span class="text-[10px] font-bold text-purple-600 uppercase">Lvl 4</span>
+                    <h4 class="font-black text-sm">Stem Shifts</h4>
+                </div>
+                <div id="map-lvl-5" class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm border-b-4 border-b-red-500 opacity-50">
+                    <span class="text-[10px] font-bold text-red-600 uppercase">BOSS</span>
+                    <h4 class="font-black text-sm">The Rebels</h4>
+                </div>
+            </div>
+
+            <div class="max-w-3xl mx-auto">
+                <div id="game-card" class="bg-white rounded-[3rem] shadow-2xl border border-slate-100 overflow-hidden relative min-h-[550px] flex flex-col">
+                    <div class="bg-slate-900 p-8 text-white">
+                        <div class="flex justify-between items-center mb-4">
+                            <span id="current-level-title" class="text-xl font-black italic">Level Title</span>
+                            <span id="question-counter" class="text-sm font-bold text-slate-400 uppercase tracking-widest">Training</span>
+                        </div>
+                        <div class="w-full bg-slate-800 h-3 rounded-full overflow-hidden">
+                            <div id="level-progress-bar" class="progress-bar bg-indigo-500 h-full w-[0%]"></div>
+                        </div>
+                    </div>
+
+                    <div class="p-8 md:p-10 text-center flex-grow flex flex-col justify-center">
+                        <div id="explanation-area">
+                            <div id="explanation-content" class="text-left mb-8 space-y-4"></div>
+                            <button onclick="startLevelQuiz()" class="bg-indigo-600 text-white font-black px-12 py-5 rounded-2xl hover:bg-indigo-500 transition shadow-xl shadow-indigo-100 active:scale-95 text-xl w-full md:w-auto">
+                                Start Challenge ⚡
+                            </button>
+                        </div>
+
+                        <div id="quiz-area" class="hidden">
+                            <p id="question-text" class="text-2xl md:text-3xl font-bold mb-10 text-slate-800 leading-snug">...</p>
+                            <div id="options-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+                        </div>
+
+                        <div id="level-complete" class="hidden py-8">
+                            <div class="text-7xl mb-6">🎉</div>
+                            <h3 class="text-4xl font-black mb-3 text-emerald-600">Level Mastered!</h3>
+                            <button id="next-level-btn" class="bg-indigo-600 text-white font-black px-12 py-5 rounded-2xl hover:bg-indigo-500 transition shadow-xl shadow-indigo-100 active:scale-95 text-lg w-full md:w-auto">
+                                Next Level 🔓
+                            </button>
+                        </div>
+
+                        <div id="boss-victory" class="hidden py-8">
+                            <div class="text-8xl mb-8 float-anim">👑</div>
+                            <h3 class="text-5xl font-black mb-6 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-rose-600 text-center uppercase">Preterite Legend</h3>
+                            <button onclick="location.reload()" class="bg-slate-900 text-white font-black px-12 py-5 rounded-2xl hover:bg-slate-800 transition shadow-2xl active:scale-95 w-full md:w-auto">Play Again 🎮</button>
+                        </div>
+                    </div>
+                    <div id="feedback-footer" class="h-2 w-full transition-colors duration-300"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, collection, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firebase Configuration
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'preterite-quest';
+
+        let user = null;
+        let studentName = "";
+        let currentLevel = 0;
+        let currentQuestionIdx = 0;
+        let unsubscribeDashboard = null;
+
+        const initAuth = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                const btn = document.getElementById('login-btn');
+                btn.disabled = false;
+                btn.innerText = "Start Quest 🚀";
+            } catch (err) {
+                console.error("Auth error:", err);
+            }
+        };
+
+        initAuth();
+
+        onAuthStateChanged(auth, (u) => {
+            user = u;
+            if (user && !unsubscribeDashboard) setupTeacherDashboard();
+        });
+
+        const gameData = [
+            {
+                title: "Level 1: Regular -AR",
+                mapId: "map-lvl-1",
+                explanation: `<h4 class="text-2xl font-black text-emerald-600 mb-4">The Regular -AR Pattern</h4>
+                    <p class="text-slate-600 font-medium italic mb-4">Focus on the standard -AR endings:</p>
+                    <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-100 text-sm font-mono">
+                        Yo: <strong>-é</strong> | Tú: <strong>-aste</strong> | Él/Ella/Ud: <strong>-ó</strong><br>
+                        Nosotros/as: <strong>-amos</strong> | Vosotros/as: <strong>-asteis</strong> | Ellos/as/Uds: <strong>-aron</strong>
+                    </div>`,
+                questions: [
+                    { q: "Yo (hablar [to speak]) ayer.", a: "hablé", options: ["hablé", "habló", "hablo", "hablaste"] },
+                    { q: "Tú (cantar [to sing]) muy bien.", a: "cantaste", options: ["cantaste", "canté", "cantó", "cantamos"] },
+                    { q: "Ella (estudiar [to study]) anoche.", a: "estudió", options: ["estudió", "estudié", "estudió", "estudiaron"] },
+                    { q: "Nosotros (caminar [to walk]) al parque.", a: "caminamos", options: ["caminamos", "caminaron", "camináis", "camino"] },
+                    { q: "Ustedes (bailar [to dance]) mucho.", a: "bailaron", options: ["bailaron", "bailamos", "bailó", "bailasteis"] },
+                    { q: "Él (trabajar [to work]) hoy.", a: "trabajó", options: ["trabajó", "trabajé", "trabajó", "trabajaron"] },
+                    { q: "Usted (comprar [to buy]) pan.", a: "compró", options: ["compró", "compré", "compraste", "compro"] },
+                    { q: "Vosotras (escuchar [to listen]) música.", a: "escuchasteis", options: ["escuchasteis", "escucharon", "escuchamos", "escuchaste"] },
+                    { q: "Ellas (mirar [to watch]) la tele.", a: "miraron", options: ["miraron", "miró", "miramos", "miraste"] },
+                    { q: "Nosotras (ayudar [to help]) a mamá.", a: "ayudamos", options: ["ayudamos", "ayudaron", "ayudó", "ayudo"] }
+                ]
+            },
+            {
+                title: "Level 2: Regular -ER/-IR",
+                mapId: "map-lvl-2",
+                explanation: `<h4 class="text-2xl font-black text-blue-600 mb-4">The Regular -ER/-IR Pattern</h4>
+                    <p class="text-slate-600 font-medium italic mb-4">-ER and -IR verbs share the exact same endings in the Preterite:</p>
+                    <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100 text-sm font-mono">
+                        Yo: <strong>-í</strong> | Tú: <strong>-iste</strong> | Él/Ella/Ud: <strong>-ió</strong><br>
+                        Nosotros/as: <strong>-imos</strong> | Vosotros/as: <strong>-isteis</strong> | Ellos/as/Uds: <strong>-ieron</strong>
+                    </div>`,
+                questions: [
+                    { q: "Yo (comer [to eat]) una pizza.", a: "comí", options: ["comí", "comiste", "comió", "comen"] },
+                    { q: "Tú (vivir [to live]) en Londres.", a: "viviste", options: ["viviste", "viví", "vivió", "vivieron"] },
+                    { q: "Él (beber [to drink]) agua.", a: "bebió", options: ["bebió", "bebe", "bebí", "bebió"] },
+                    { q: "Nosotros (aprender [to learn]) mucho.", a: "aprendimos", options: ["aprendimos", "aprendieron", "aprenden", "aprendió"] },
+                    { q: "Ellas (escribir [to write]) cartas.", a: "escribieron", options: ["escribieron", "escribió", "escribiste", "escriben"] },
+                    { q: "Vosotros (abrir [to open]) la caja.", a: "abristeis", options: ["abristeis", "abrieron", "abrimos", "abriste"] },
+                    { q: "Usted (correr [to run]) en el parque.", a: "corrió", options: ["corrió", "corres", "corrí", "corrieron"] },
+                    { q: "Ustedes (decidir [to decide]) el plan.", a: "decidieron", options: ["decidieron", "decidimos", "decidió", "decidiste"] },
+                    { q: "Yo (recibir [to receive]) un regalo.", a: "recibí", options: ["recibí", "recibió", "recibes", "recibo"] },
+                    { q: "Nosotras (subir [to go up]) al tren.", a: "subimos", options: ["subimos", "subieron", "sube", "subimos"] }
+                ]
+            },
+            {
+                title: "Level 3: Yo-Spelling Hacks",
+                mapId: "map-lvl-3",
+                explanation: `<h4 class="text-2xl font-black text-amber-600 mb-4">The 'Yo' Spelling Hack</h4>
+                    <p class="text-slate-600 mb-4 italic">Change ONLY for <strong>Yo</strong> to keep the sound. Others are regular!</p>
+                    <div class="bg-amber-50 p-4 rounded-xl space-y-2 text-sm font-mono border border-amber-100">
+                        -car &rarr; <strong>-qué</strong> | -gar &rarr; <strong>-gué</strong> | -zar &rarr; <strong>-cé</strong>
+                    </div>`,
+                questions: [
+                    { q: "Yo (buscar [to look for]) las llaves.", a: "busqué", options: ["busqué", "buscó", "buscaste", "buscamos"] },
+                    { q: "Yo (llegar [to arrive]) tarde.", a: "llegué", options: ["llegué", "llegó", "llegaste", "llego"] },
+                    { q: "Yo (empezar [to start]) la clase.", a: "empecé", options: ["empecé", "empezó", "empezaste", "empiezo"] },
+                    { q: "Yo (pagar [to pay]) la cuenta.", a: "pagué", options: ["pagué", "pagó", "pagaste", "pago"] },
+                    { q: "Yo (sacar [to take out]) la basura.", a: "saqué", options: ["saqué", "sacó", "sacaste", "saco"] },
+                    { q: "Yo (tocar [to play/touch]) el piano.", a: "toqué", options: ["toqué", "tocó", "tocaste", "toco"] },
+                    { q: "Yo (apagar [to turn off]) la luz.", a: "apagué", options: ["apagué", "apagó", "apagaste", "apago"] },
+                    { q: "Yo (almorzar [to eat lunch]) pizza.", a: "almorcé", options: ["almorcé", "almorzó", "almorzaste", "almuerzo"] },
+                    { q: "Yo (practicar [to practice]) deporte.", a: "practiqué", options: ["practiqué", "practicó", "practicaste", "practico"] },
+                    { q: "Yo (cruzar [to cross]) la calle.", a: "crucé", options: ["crucé", "cruzó", "cruzaste", "cruzo"] }
+                ]
+            },
+            {
+                title: "Level 4: Stem Shifters",
+                mapId: "map-lvl-4",
+                explanation: `<h4 class="text-2xl font-black text-purple-600 mb-4">The Shifters</h4>
+                    <div class="space-y-2 text-xs">
+                        <div class="bg-purple-50 p-2 rounded"><strong>Roots:</strong> Tener(tuv-), Estar(estuv-), Saber(sup-), Poder(pud-), Querer(quis-), Venir(vin-).</div>
+                        <div class="bg-orange-50 p-2 rounded"><strong>3rd Person:</strong> Pedir(pidió/pidieron), Leer(leyó/leyeron), Morir(murió/murieron).</div>
+                        <div class="bg-rose-50 p-2 rounded"><strong>J-Squad:</strong> Decir(dij-), Traer(traj-). "Ellos" form: <strong>-eron</strong>.</div>
+                    </div>`,
+                questions: [
+                    { q: "Ella (tener [to have]) un gato.", a: "tuvo", options: ["tuvo", "tuve", "tenió", "teniste"] },
+                    { q: "Nosotras (estar [to be]) allí.", a: "estuvimos", options: ["estuvimos", "estuviste", "estamos", "estuvieron"] },
+                    { q: "Yo (saber [to know]) la verdad.", a: "supe", options: ["supe", "sabí", "supo", "sapó"] },
+                    { q: "Ellas (poder [to be able to]) ir.", a: "pudieron", options: ["pudieron", "podieron", "pudó", "podiste"] },
+                    { q: "Usted (leer [to read]) el libro.", a: "leyó", options: ["leyó", "leió", "leyeron", "leyí"] },
+                    { q: "Él (morir [to die]) ayer.", a: "murió", options: ["murió", "morió", "murió", "murieste"] },
+                    { q: "Ustedes (decir [to say]) 'hola'.", a: "dijeron", options: ["dijeron", "decieron", "dijieron", "decisteis"] },
+                    { q: "Vosotros (traer [to bring]) pan.", a: "trajisteis", options: ["trajisteis", "trajeron", "trajiste", "trajeron"] },
+                    { q: "Usted (pedir [to ask for]) café.", a: "pidió", options: ["pidió", "pedió", "pudi", "pidieron"] },
+                    { q: "Yo (venir [to come]) a casa.", a: "vine", options: ["vine", "vinó", "vinimos", "vini"] }
+                ]
+            },
+            {
+                title: "BOSS LEVEL: The Rebels",
+                mapId: "map-lvl-5",
+                explanation: `<h4 class="text-2xl font-black text-red-600 mb-4">Boss Level: No Patterns!</h4>
+                    <div class="space-y-2 text-[11px] font-mono">
+                        <div class="bg-slate-900 text-white p-2 rounded">Ser/Ir: fui, fuiste, fue, fuimos, fuisteis, fueron.</div>
+                        <div class="bg-emerald-900 text-white p-2 rounded">Dar/Ver: di/vi, dio/vio... (No accents).</div>
+                        <div class="bg-rose-900 text-white p-2 rounded">Hacer: hice, hiciste, hizo, hicimos, hicieron.</div>
+                    </div>`,
+                questions: [
+                    { q: "Yo (ir [to go]) a la playa.", a: "fui", options: ["fui", "iba", "fuiste", "fue"] },
+                    { q: "Ella (ser [to be]) doctora.", a: "fue", options: ["fue", "fui", "era", "fuiste"] },
+                    { q: "Yo (hacer [to do/make]) la cama.", a: "hice", options: ["hice", "hizo", "hacía", "hiciste"] },
+                    { q: "Él (hacer [to do/make]) la tarea.", a: "hizo", options: ["hizo", "hice", "hacia", "hicieron"] },
+                    { q: "Ustedes (ir [to go]) de viaje.", a: "fueron", options: ["fueron", "van", "fuimos", "fueron"] },
+                    { q: "Vosotros (ver [to see]) a María.", a: "visteis", options: ["visteis", "viste", "vimos", "vieron"] },
+                    { q: "Yo (dar [to give]) un beso.", a: "di", options: ["di", "dó", "daba", "dimos"] },
+                    { q: "Vosotras (ser [to be]) profesoras.", a: "fuisteis", options: ["fuisteis", "eran", "fui", "fuimos"] },
+                    { q: "Él (ver [to see]) el mar.", a: "vio", options: ["vio", "vió", "viste", "veía"] },
+                    { q: "Ellas (dar [to give]) comida.", a: "dieron", options: ["dieron", "daron", "dimos", "dan"] }
+                ]
+            }
+        ];
+
+        window.login = () => {
+            const name = document.getElementById('student-name').value.trim();
+            if (!name) return;
+            studentName = name;
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('game-section').classList.remove('hidden');
+            saveProgress(0, false);
+            loadLevelExplanation();
+        };
+
+        window.toggleDashboard = () => {
+            const dash = document.getElementById('teacher-dashboard');
+            const login = document.getElementById('login-section');
+            const game = document.getElementById('game-section');
+            if (dash.classList.contains('hidden')) {
+                dash.classList.remove('hidden'); login.classList.add('hidden'); game.classList.add('hidden');
+                if (user) setupTeacherDashboard();
+            } else {
+                dash.classList.add('hidden');
+                if (studentName) game.classList.remove('hidden'); else login.classList.remove('hidden');
+            }
+        };
+
+        const saveProgress = async (lvl, finished) => {
+            if (!user || !studentName) return;
+            try {
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'student_reports', user.uid);
+                await setDoc(docRef, {
+                    name: studentName,
+                    currentLevel: lvl,
+                    level1: lvl > 0 || (lvl === 0 && finished),
+                    level2: lvl > 1 || (lvl === 1 && finished),
+                    level3: lvl > 2 || (lvl === 2 && finished),
+                    level4: lvl > 3 || (lvl === 3 && finished),
+                    bossDefeated: lvl === 4 && finished,
+                    lastUpdated: new Date().toISOString()
+                }, { merge: true });
+            } catch (e) { console.error(e); }
+        };
+
+        const setupTeacherDashboard = () => {
+            if (!user) return;
+            if (unsubscribeDashboard) unsubscribeDashboard();
+            const reportsCol = collection(db, 'artifacts', appId, 'public', 'data', 'student_reports');
+            unsubscribeDashboard = onSnapshot(reportsCol, (snapshot) => {
+                const tbody = document.getElementById('reports-table-body');
+                tbody.innerHTML = '';
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const row = `
+                        <tr class="border-b border-slate-50 hover:bg-slate-50 transition">
+                            <td class="py-3 font-bold text-slate-700">${data.name || 'Anonymous'}</td>
+                            <td class="py-3">${data.level1 ? '✅' : '⏳'}</td>
+                            <td class="py-3">${data.level2 ? '✅' : '⏳'}</td>
+                            <td class="py-3">${data.level3 ? '✅' : '⏳'}</td>
+                            <td class="py-3">${data.level4 ? '✅' : '⏳'}</td>
+                            <td class="py-3">${data.bossDefeated ? '🏆' : '⏳'}</td>
+                        </tr>`;
+                    tbody.innerHTML += row;
+                });
+            }, (err) => console.error(err));
+        };
+
+        const loadLevelExplanation = () => {
+            const level = gameData[currentLevel];
+            document.getElementById('explanation-area').classList.remove('hidden');
+            document.getElementById('quiz-area').classList.add('hidden');
+            document.getElementById('level-complete').classList.add('hidden');
+            document.getElementById('current-level-title').innerText = level.title;
+            document.getElementById('question-counter').innerText = "Training Session";
+            document.getElementById('level-progress-bar').style.width = "0%";
+            document.getElementById('explanation-content').innerHTML = level.explanation;
+            document.getElementById('global-progress-text').innerText = `${level.title}`;
+            gameData.forEach(l => document.getElementById(l.mapId).classList.add('opacity-50'));
+            document.getElementById(level.mapId).classList.remove('opacity-50');
+        };
+
+        window.startLevelQuiz = () => {
+            document.getElementById('explanation-area').classList.add('hidden');
+            document.getElementById('quiz-area').classList.remove('hidden');
+            loadQuestion();
+        };
+
+        const loadQuestion = () => {
+            const level = gameData[currentLevel];
+            const question = level.questions[currentQuestionIdx];
+            document.getElementById('question-text').innerText = question.q;
+            const grid = document.getElementById('options-grid'); grid.innerHTML = '';
+            document.getElementById('question-counter').innerText = `Question ${currentQuestionIdx + 1} / 10`;
+            document.getElementById('level-progress-bar').style.width = `${((currentQuestionIdx + 1) / 10) * 100}%`;
+            const shuffled = [...question.options].sort(() => Math.random() - 0.5);
+            shuffled.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "bg-slate-50 hover:bg-white border-2 border-slate-200 hover:border-indigo-400 p-5 rounded-3xl font-bold text-lg transition-all shadow-sm";
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(opt, question.a, btn);
+                grid.appendChild(btn);
+            });
+        };
+
+        const checkAnswer = (selected, correct, btn) => {
+            const card = document.getElementById('game-card');
+            const footer = document.getElementById('feedback-footer');
+            if (selected === correct) {
+                btn.classList.replace('bg-slate-50', 'bg-emerald-500'); btn.classList.add('text-white', 'border-emerald-600');
+                footer.classList.add('bg-emerald-500');
+                setTimeout(() => { footer.classList.remove('bg-emerald-500'); advanceFlow(); }, 600);
+            } else {
+                btn.classList.replace('bg-slate-50', 'bg-rose-500'); btn.classList.add('text-white', 'border-rose-600');
+                card.classList.add('shake'); footer.classList.add('bg-rose-500');
+                setTimeout(() => {
+                    card.classList.remove('shake'); footer.classList.remove('bg-rose-500');
+                    btn.className = "bg-slate-50 hover:bg-white border-2 border-slate-200 hover:border-indigo-400 p-5 rounded-3xl font-bold text-lg transition-all shadow-sm";
+                }, 500);
+            }
+        };
+
+        const advanceFlow = () => {
+            currentQuestionIdx++;
+            if (currentQuestionIdx >= 10) {
+                document.getElementById('quiz-area').classList.add('hidden');
+                saveProgress(currentLevel, true);
+                if (currentLevel === gameData.length - 1) document.getElementById('boss-victory').classList.remove('hidden');
+                else document.getElementById('level-complete').classList.remove('hidden');
+            } else loadQuestion();
+        };
+
+        document.getElementById('next-level-btn').onclick = () => {
+            currentLevel++; currentQuestionIdx = 0; loadLevelExplanation();
+        };
+    </script>
+</body>
+</html>
