@@ -4,17 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Spanish Preterite: The Quest for Mastery</title>
-    
-    <!-- Google Analytics (gtag.js) -->
-    <!-- REEMPLAZA "TU_ID_AQUÍ" con tu ID de medición de Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=TU_ID_AQUÍ"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'TU_ID_AQUÍ');
-    </script>
-
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
@@ -35,7 +24,6 @@
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen">
 
-    <!-- Navbar -->
     <nav class="bg-white/90 backdrop-blur-md border-b border-slate-200 py-4 px-6 sticky top-0 z-50">
         <div class="max-w-6xl mx-auto flex justify-between items-center">
             <div class="flex items-center space-x-2">
@@ -49,18 +37,27 @@
     </nav>
 
     <main class="max-w-6xl mx-auto px-4 py-12">
-        
-        <!-- Login / Setup Section -->
+
         <section id="login-section" class="max-w-md mx-auto bg-white p-10 rounded-[2.5rem] shadow-2xl border border-slate-100 text-center">
             <h2 class="text-3xl font-black mb-6">Welcome, Student! 🎓</h2>
             <p class="text-slate-500 mb-8">Enter your full name to start your quest and save your progress.</p>
-            <input type="text" id="student-name" class="w-full p-4 border-2 border-slate-100 rounded-2xl mb-6 focus:border-indigo-500 outline-none font-bold text-center" placeholder="Your Name">
-            <button id="login-btn" onclick="login()" class="w-full bg-indigo-600 text-white font-black py-4 rounded-2xl hover:bg-indigo-500 transition shadow-xl shadow-indigo-100 active:scale-95 disabled:opacity-50" disabled>
-                Initializing Auth...
+            <input
+                type="text"
+                id="student-name"
+                class="w-full p-4 border-2 border-slate-100 rounded-2xl mb-6 focus:border-indigo-500 outline-none font-bold text-center"
+                placeholder="Your Name"
+                oninput="document.getElementById('login-btn').disabled = !this.value.trim()"
+            >
+            <button
+                id="login-btn"
+                onclick="login()"
+                class="w-full bg-indigo-600 text-white font-black py-4 rounded-2xl hover:bg-indigo-500 transition shadow-xl shadow-indigo-100 active:scale-95 disabled:opacity-50"
+                disabled
+            >
+                Start Quest 🚀
             </button>
         </section>
 
-        <!-- Teacher Dashboard (Hidden) -->
         <section id="teacher-dashboard" class="hidden max-w-5xl mx-auto bg-white p-10 rounded-[2.5rem] shadow-2xl border border-slate-100">
             <div class="flex justify-between items-center mb-8">
                 <h2 class="text-3xl font-black">Student Progress Report</h2>
@@ -79,13 +76,11 @@
                         </tr>
                     </thead>
                     <tbody id="reports-table-body" class="text-sm">
-                        <!-- Reports injected here -->
-                    </tbody>
+                        </tbody>
                 </table>
             </div>
         </section>
 
-        <!-- Game Section (Hidden until login) -->
         <section id="game-section" class="hidden">
             <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-12">
                 <div id="map-lvl-1" class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm border-b-4 border-b-emerald-500 opacity-50">
@@ -155,14 +150,13 @@
         </section>
     </main>
 
-    <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot, collection, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Firebase Configuration
-                const firebaseConfig = {
+        // ─── Firebase Configuration ───────────────────────────────────────────────
+        const firebaseConfig = {
             apiKey: "AIzaSyAA5tYApoXJBrtkLD9DMMwrjC8satEeHnk",
             authDomain: "preterite-quest.firebaseapp.com",
             projectId: "preterite-quest",
@@ -170,10 +164,11 @@
             messagingSenderId: "131193250622",
             appId: "1:131193250622:web:c21ff4b2f54ef9870a826f"
         };
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'preterite-quest';
+        const appId = 'preterite-quest';
 
         let user = null;
         let studentName = "";
@@ -181,6 +176,7 @@
         let currentQuestionIdx = 0;
         let unsubscribeDashboard = null;
 
+        // Auth runs in background — does NOT block the login button
         const initAuth = async () => {
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -188,11 +184,8 @@
                 } else {
                     await signInAnonymously(auth);
                 }
-                const btn = document.getElementById('login-btn');
-                btn.disabled = false;
-                btn.innerText = "Start Quest 🚀";
             } catch (err) {
-                console.error("Auth error:", err);
+                console.error("Auth error (progress won't be saved):", err);
             }
         };
 
@@ -203,6 +196,7 @@
             if (user && !unsubscribeDashboard) setupTeacherDashboard();
         });
 
+        // ─── Game Data ────────────────────────────────────────────────────────────
         const gameData = [
             {
                 title: "Level 1: Regular -AR",
@@ -216,10 +210,10 @@
                 questions: [
                     { q: "Yo (hablar [to speak]) ayer.", a: "hablé", options: ["hablé", "habló", "hablo", "hablaste"] },
                     { q: "Tú (cantar [to sing]) muy bien.", a: "cantaste", options: ["cantaste", "canté", "cantó", "cantamos"] },
-                    { q: "Ella (estudiar [to study]) anoche.", a: "estudió", options: ["estudió", "estudié", "estudió", "estudiaron"] },
+                    { q: "Ella (estudiar [to study]) anoche.", a: "estudió", options: ["estudió", "estudié", "estudiaste", "estudiaron"] },
                     { q: "Nosotros (caminar [to walk]) al parque.", a: "caminamos", options: ["caminamos", "caminaron", "camináis", "camino"] },
                     { q: "Ustedes (bailar [to dance]) mucho.", a: "bailaron", options: ["bailaron", "bailamos", "bailó", "bailasteis"] },
-                    { q: "Él (trabajar [to work]) hoy.", a: "trabajó", options: ["trabajó", "trabajé", "trabajó", "trabajaron"] },
+                    { q: "Él (trabajar [to work]) hoy.", a: "trabajó", options: ["trabajó", "trabajé", "trabajaste", "trabajaron"] },
                     { q: "Usted (comprar [to buy]) pan.", a: "compró", options: ["compró", "compré", "compraste", "compro"] },
                     { q: "Vosotras (escuchar [to listen]) música.", a: "escuchasteis", options: ["escuchasteis", "escucharon", "escuchamos", "escuchaste"] },
                     { q: "Ellas (mirar [to watch]) la tele.", a: "miraron", options: ["miraron", "miró", "miramos", "miraste"] },
@@ -238,14 +232,14 @@
                 questions: [
                     { q: "Yo (comer [to eat]) una pizza.", a: "comí", options: ["comí", "comiste", "comió", "comen"] },
                     { q: "Tú (vivir [to live]) en Londres.", a: "viviste", options: ["viviste", "viví", "vivió", "vivieron"] },
-                    { q: "Él (beber [to drink]) agua.", a: "bebió", options: ["bebió", "bebe", "bebí", "bebió"] },
+                    { q: "Él (beber [to drink]) agua.", a: "bebió", options: ["bebió", "bebe", "bebí", "bebieron"] },
                     { q: "Nosotros (aprender [to learn]) mucho.", a: "aprendimos", options: ["aprendimos", "aprendieron", "aprenden", "aprendió"] },
                     { q: "Ellas (escribir [to write]) cartas.", a: "escribieron", options: ["escribieron", "escribió", "escribiste", "escriben"] },
                     { q: "Vosotros (abrir [to open]) la caja.", a: "abristeis", options: ["abristeis", "abrieron", "abrimos", "abriste"] },
                     { q: "Usted (correr [to run]) en el parque.", a: "corrió", options: ["corrió", "corres", "corrí", "corrieron"] },
                     { q: "Ustedes (decidir [to decide]) el plan.", a: "decidieron", options: ["decidieron", "decidimos", "decidió", "decidiste"] },
                     { q: "Yo (recibir [to receive]) un regalo.", a: "recibí", options: ["recibí", "recibió", "recibes", "recibo"] },
-                    { q: "Nosotras (subir [to go up]) al tren.", a: "subimos", options: ["subimos", "subieron", "sube", "subimos"] }
+                    { q: "Nosotras (subir [to go up]) al tren.", a: "subimos", options: ["subimos", "subieron", "sube", "subí"] }
                 ]
             },
             {
@@ -282,13 +276,13 @@
                     { q: "Ella (tener [to have]) un gato.", a: "tuvo", options: ["tuvo", "tuve", "tenió", "teniste"] },
                     { q: "Nosotras (estar [to be]) allí.", a: "estuvimos", options: ["estuvimos", "estuviste", "estamos", "estuvieron"] },
                     { q: "Yo (saber [to know]) la verdad.", a: "supe", options: ["supe", "sabí", "supo", "sapó"] },
-                    { q: "Ellas (poder [to be able to]) ir.", a: "pudieron", options: ["pudieron", "podieron", "pudó", "podiste"] },
-                    { q: "Usted (leer [to read]) el libro.", a: "leyó", options: ["leyó", "leió", "leyeron", "leyí"] },
-                    { q: "Él (morir [to die]) ayer.", a: "murió", options: ["murió", "morió", "murió", "murieste"] },
+                    { q: "Ellas (poder [to be able to]) ir.", a: "pudieron", options: ["pudieron", "podieron", "pudo", "podiste"] },
+                    { q: "Usted (leer [to read]) el libro.", a: "leyó", options: ["leyó", "leió", "leyeron", "leí"] },
+                    { q: "Él (morir [to die]) ayer.", a: "murió", options: ["murió", "morió", "muriemos", "murieste"] },
                     { q: "Ustedes (decir [to say]) 'hola'.", a: "dijeron", options: ["dijeron", "decieron", "dijieron", "decisteis"] },
-                    { q: "Vosotros (traer [to bring]) pan.", a: "trajisteis", options: ["trajisteis", "trajeron", "trajiste", "trajeron"] },
-                    { q: "Usted (pedir [to ask for]) café.", a: "pidió", options: ["pidió", "pedió", "pudi", "pidieron"] },
-                    { q: "Yo (venir [to come]) a casa.", a: "vine", options: ["vine", "vinó", "vinimos", "vini"] }
+                    { q: "Vosotros (traer [to bring]) pan.", a: "trajisteis", options: ["trajisteis", "trajeron", "trajiste", "traisteis"] },
+                    { q: "Usted (pedir [to ask for]) café.", a: "pidió", options: ["pidió", "pedió", "pudió", "pidieron"] },
+                    { q: "Yo (venir [to come]) a casa.", a: "vine", options: ["vine", "vinó", "vinimos", "vení"] }
                 ]
             },
             {
@@ -304,8 +298,8 @@
                     { q: "Yo (ir [to go]) a la playa.", a: "fui", options: ["fui", "iba", "fuiste", "fue"] },
                     { q: "Ella (ser [to be]) doctora.", a: "fue", options: ["fue", "fui", "era", "fuiste"] },
                     { q: "Yo (hacer [to do/make]) la cama.", a: "hice", options: ["hice", "hizo", "hacía", "hiciste"] },
-                    { q: "Él (hacer [to do/make]) la tarea.", a: "hizo", options: ["hizo", "hice", "hacia", "hicieron"] },
-                    { q: "Ustedes (ir [to go]) de viaje.", a: "fueron", options: ["fueron", "van", "fuimos", "fueron"] },
+                    { q: "Él (hacer [to do/make]) la tarea.", a: "hizo", options: ["hizo", "hice", "hacía", "hicieron"] },
+                    { q: "Ustedes (ir [to go]) de viaje.", a: "fueron", options: ["fueron", "van", "fuimos", "fuisteis"] },
                     { q: "Vosotros (ver [to see]) a María.", a: "visteis", options: ["visteis", "viste", "vimos", "vieron"] },
                     { q: "Yo (dar [to give]) un beso.", a: "di", options: ["di", "dó", "daba", "dimos"] },
                     { q: "Vosotras (ser [to be]) profesoras.", a: "fuisteis", options: ["fuisteis", "eran", "fui", "fuimos"] },
@@ -315,6 +309,7 @@
             }
         ];
 
+        // ─── Login ────────────────────────────────────────────────────────────────
         window.login = () => {
             const name = document.getElementById('student-name').value.trim();
             if (!name) return;
@@ -330,14 +325,18 @@
             const login = document.getElementById('login-section');
             const game = document.getElementById('game-section');
             if (dash.classList.contains('hidden')) {
-                dash.classList.remove('hidden'); login.classList.add('hidden'); game.classList.add('hidden');
+                dash.classList.remove('hidden');
+                login.classList.add('hidden');
+                game.classList.add('hidden');
                 if (user) setupTeacherDashboard();
             } else {
                 dash.classList.add('hidden');
-                if (studentName) game.classList.remove('hidden'); else login.classList.remove('hidden');
+                if (studentName) game.classList.remove('hidden');
+                else login.classList.remove('hidden');
             }
         };
 
+        // ─── Firestore: Save Progress ─────────────────────────────────────────────
         const saveProgress = async (lvl, finished) => {
             if (!user || !studentName) return;
             try {
@@ -352,9 +351,12 @@
                     bossDefeated: lvl === 4 && finished,
                     lastUpdated: new Date().toISOString()
                 }, { merge: true });
-            } catch (e) { console.error(e); }
+            } catch (e) {
+                console.error("Firestore write error:", e);
+            }
         };
 
+        // ─── Firestore: Teacher Dashboard ─────────────────────────────────────────
         const setupTeacherDashboard = () => {
             if (!user) return;
             if (unsubscribeDashboard) unsubscribeDashboard();
@@ -362,9 +364,9 @@
             unsubscribeDashboard = onSnapshot(reportsCol, (snapshot) => {
                 const tbody = document.getElementById('reports-table-body');
                 tbody.innerHTML = '';
-                snapshot.forEach((doc) => {
-                    const data = doc.data();
-                    const row = `
+                snapshot.forEach((d) => {
+                    const data = d.data();
+                    tbody.innerHTML += `
                         <tr class="border-b border-slate-50 hover:bg-slate-50 transition">
                             <td class="py-3 font-bold text-slate-700">${data.name || 'Anonymous'}</td>
                             <td class="py-3">${data.level1 ? '✅' : '⏳'}</td>
@@ -373,21 +375,22 @@
                             <td class="py-3">${data.level4 ? '✅' : '⏳'}</td>
                             <td class="py-3">${data.bossDefeated ? '🏆' : '⏳'}</td>
                         </tr>`;
-                    tbody.innerHTML += row;
                 });
-            }, (err) => console.error(err));
+            }, (err) => console.error("Firestore read error:", err));
         };
 
+        // ─── Game Logic ───────────────────────────────────────────────────────────
         const loadLevelExplanation = () => {
             const level = gameData[currentLevel];
             document.getElementById('explanation-area').classList.remove('hidden');
             document.getElementById('quiz-area').classList.add('hidden');
             document.getElementById('level-complete').classList.add('hidden');
+            document.getElementById('boss-victory').classList.add('hidden');
             document.getElementById('current-level-title').innerText = level.title;
             document.getElementById('question-counter').innerText = "Training Session";
             document.getElementById('level-progress-bar').style.width = "0%";
             document.getElementById('explanation-content').innerHTML = level.explanation;
-            document.getElementById('global-progress-text').innerText = `${level.title}`;
+            document.getElementById('global-progress-text').innerText = level.title;
             gameData.forEach(l => document.getElementById(l.mapId).classList.add('opacity-50'));
             document.getElementById(level.mapId).classList.remove('opacity-50');
         };
@@ -402,7 +405,8 @@
             const level = gameData[currentLevel];
             const question = level.questions[currentQuestionIdx];
             document.getElementById('question-text').innerText = question.q;
-            const grid = document.getElementById('options-grid'); grid.innerHTML = '';
+            const grid = document.getElementById('options-grid');
+            grid.innerHTML = '';
             document.getElementById('question-counter').innerText = `Question ${currentQuestionIdx + 1} / 10`;
             document.getElementById('level-progress-bar').style.width = `${((currentQuestionIdx + 1) / 10) * 100}%`;
             const shuffled = [...question.options].sort(() => Math.random() - 0.5);
@@ -419,14 +423,18 @@
             const card = document.getElementById('game-card');
             const footer = document.getElementById('feedback-footer');
             if (selected === correct) {
-                btn.classList.replace('bg-slate-50', 'bg-emerald-500'); btn.classList.add('text-white', 'border-emerald-600');
+                btn.classList.replace('bg-slate-50', 'bg-emerald-500');
+                btn.classList.add('text-white', 'border-emerald-600');
                 footer.classList.add('bg-emerald-500');
                 setTimeout(() => { footer.classList.remove('bg-emerald-500'); advanceFlow(); }, 600);
             } else {
-                btn.classList.replace('bg-slate-50', 'bg-rose-500'); btn.classList.add('text-white', 'border-rose-600');
-                card.classList.add('shake'); footer.classList.add('bg-rose-500');
+                btn.classList.replace('bg-slate-50', 'bg-rose-500');
+                btn.classList.add('text-white', 'border-rose-600');
+                card.classList.add('shake');
+                footer.classList.add('bg-rose-500');
                 setTimeout(() => {
-                    card.classList.remove('shake'); footer.classList.remove('bg-rose-500');
+                    card.classList.remove('shake');
+                    footer.classList.remove('bg-rose-500');
                     btn.className = "bg-slate-50 hover:bg-white border-2 border-slate-200 hover:border-indigo-400 p-5 rounded-3xl font-bold text-lg transition-all shadow-sm";
                 }, 500);
             }
@@ -437,13 +445,20 @@
             if (currentQuestionIdx >= 10) {
                 document.getElementById('quiz-area').classList.add('hidden');
                 saveProgress(currentLevel, true);
-                if (currentLevel === gameData.length - 1) document.getElementById('boss-victory').classList.remove('hidden');
-                else document.getElementById('level-complete').classList.remove('hidden');
-            } else loadQuestion();
+                if (currentLevel === gameData.length - 1) {
+                    document.getElementById('boss-victory').classList.remove('hidden');
+                } else {
+                    document.getElementById('level-complete').classList.remove('hidden');
+                }
+            } else {
+                loadQuestion();
+            }
         };
 
         document.getElementById('next-level-btn').onclick = () => {
-            currentLevel++; currentQuestionIdx = 0; loadLevelExplanation();
+            currentLevel++;
+            currentQuestionIdx = 0;
+            loadLevelExplanation();
         };
     </script>
 </body>
